@@ -1,0 +1,218 @@
+/* Box sizing rules */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    background-color: #f7fbfe;
+    -moz-text-size-adjust: none;
+    -webkit-text-size-adjust: none;
+    text-size-adjust: none;
+    line-height: 1.5;
+}
+
+body {
+    font-family: system-ui, sans-serif;
+}
+
+a {
+    text-decoration: none;
+    color: black;
+}
+
+/* Remove default margin in favour of better control in authored CSS */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    margin: 0 0 1.5rem;
+}
+
+/* Set shorter line heights on headings and interactive elements */
+h1,
+h2,
+h3,
+h4,
+button,
+input,
+label {
+    line-height: 1.1;
+}
+
+h1,
+h2 {
+    font-size: 1.266rem;
+}
+
+/* Make images easier to work with */
+img,
+picture,
+svg {
+    max-width: 100%;
+    display: block;
+}
+
+/* Inherit fonts for inputs and buttons */
+input,
+button {
+    font-family: inherit;
+    font-size: inherit;
+}
+
+/* above is css reset */
+
+.bookmarks-title {
+    color: #2d2c3a;
+    margin-bottom: 1.5rem;
+}
+
+.createArea {
+    padding: 0.5rem 0.5rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid #e3f0fb;
+}
+
+.create-title {
+    margin: 0.5rem 0;
+    color: #2d2c3a;
+}
+
+.form_unit {
+    display: flex;
+    width: 100%;
+    gap: 0.25rem;
+}
+
+.input {
+    width: 100%;
+    height: 2.5rem;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    border: 1px solid lightgrey;
+    outline: none;
+    transition: all 0.3s cubic-bezier(0.19, 1, 0.22, 1);
+    box-shadow: 0px 0px 20px -18px;
+}
+
+.input:hover {
+    border: 2px solid #9ed4f1;
+    box-shadow: 0px 0px 20px -17px;
+}
+
+.input:focus {
+    border: 2px solid #9ed4f1;
+}
+
+#category {
+    width: 40%;
+}
+
+#name {
+    width: 60%;
+}
+
+.btn--create {
+    height: 2.5rem;
+    padding: 0.5rem;
+    background-color: #9ed4f1;
+    color: #2d2c3a;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 0.5rem;
+    width: 100%;
+    text-align: center;
+    border: none;
+    cursor: pointer;
+    transition: 0.4s;
+}
+
+.btn--create:hover {
+    box-shadow: 5px 3px 26px -14px #1779b2;
+}
+
+.btn--create:focus {
+    transform: scale(0.97);
+    box-shadow: 5px 3px 26px -10px #1779b2;
+}
+
+section {
+    padding-inline: 0.5rem;
+}
+
+.originDetails {
+    margin-bottom: 1rem;
+}
+
+summary {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.list-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.catDetails {
+    border: 1px solid rgb(226, 226, 226);
+    margin-block: 0.75rem;
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+}
+
+.catSummary {
+    font-size: 0.875rem;
+    padding-top: 0.2rem;
+    padding-left: 0.25rem;
+}
+
+.item-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.115rem 0.5rem;
+    background-color: #e3f0fb;
+    border-radius: 0.25rem;
+    transition: 0.4s;
+}
+
+.item-container:hover {
+    background-color: #c1e3f6;
+    box-shadow: 5px 3px 16px -10px #9ed4f1;
+}
+
+.item-container div:first-of-type {
+    width: 85%;
+}
+
+.item-title {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    cursor: pointer;
+}
+
+.item-title p {
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.item-title span {
+    font-style: italic;
+    font-size: 0.75rem;
+    color: rgb(160, 160, 160);
+}
+
+.item--delete img {
+    width: 14px;
+    height: 14px;
+    cursor: pointer;
+}

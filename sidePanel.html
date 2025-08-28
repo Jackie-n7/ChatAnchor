@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>My AI-Assistant Marker</title>
+        <link rel="stylesheet" href="main.css" />
+    </head>
+    <body>
+        <form class="createArea" id="create_Form">
+            <h1 class="create-title">🔖 New Bookmark</h1>
+            <div class="form_unit">
+                <input
+                    type="text"
+                    id="category"
+                    name="category"
+                    placeholder="category (opt.)"
+                    class="input"
+                />
+                <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    placeholder="name"
+                    class="input"
+                    required
+                />
+            </div>
+
+            <div class="form_unit">
+                <button type="submit" class="btn--create">
+                    <i></i> Save and select a location
+                </button>
+            </div>
+        </form>
+
+        <section>
+            <h1 class="bookmarks-title">Your Bookmarks</h1>
+            <div class="accordion" id="bookmarkContainer"></div>
+        </section>
+
+        <script src="sidePanel.js" type="module"></script>
+    </body>
+</html>
+<!-- Copyright (c) 2025 Long Cheng -->
