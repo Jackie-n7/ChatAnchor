@@ -152,16 +152,135 @@ chrome.runtime.onMessage.addListener((msg) => {
         bookmark.url = url;
         bookmark.origin = u.origin;
         const now = new Date();
-        bookmark.createTime = now.toLocaleString("en-US", {
-            month: "short",
-            day: "2-digit",
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: true,
-        });
+        bookmark.createTime = now.getTime();
 
         document.addEventListener("click", handleClick);
     }
 });
+
+//------- v1.1 add instant Anchor --------//
+let quickMarkContainer = null;
+const hint = document.createElement("div");
+hint.id = "hint";
+hint.className = "hintDiv";
+hint.textContent = "⚡️Quick Mark";
+hint.style.cssText = `position: absolute;
+        display: none;
+        padding: 0.375rem 0.625rem;
+        font-size: 0.875rem;
+        border-radius: 0.5rem;
+        background: #111;
+        color: #fff;
+        box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15);
+        pointer-events: auto; 
+        white-space: nowrap;
+        z-index: 9999;
+        transform: translateY(-8px);`;
+document.body.appendChild(hint);
+
+function getSelectionRect() {
+    const sel = window.getSelection();
+    if (!sel || sel.isCollapsed || sel.rangeCount === 0) return null;
+
+    const endContainer = sel.getRangeAt(sel.rangeCount - 1).endContainer;
+
+    // if endContainer in text node, then go to get parentNode
+    quickMarkContainer =
+        endContainer.nodeType === Node.TEXT_NODE
+            ? endContainer.parentElement
+            : endContainer;
+
+    const range = sel.getRangeAt(sel.rangeCount - 1).cloneRange();
+
+    let rect = range.getBoundingClientRect();
+    if (!rect || (rect.width === 0 && rect.height === 0)) {
+        const rects = range.getClientRects();
+        if (rects && rects.length) {
+            rect = rects[rects.length - 1];
+        }
+    }
+    return rect || null;
+}
+
+function showInstantAnchor() {
+    const rect = getSelectionRect();
+
+    if (!rect) {
+        hint.style.display = "none";
+        return;
+    }
+
+    const pageLeft = rect.right + window.scrollX;
+    const pageTop = rect.bottom + window.scrollY;
+
+    hint.style.left = `${pageLeft}px`;
+    hint.style.top = `${pageTop}px`;
+    hint.style.display = "block";
+}
+
+function handleEndOfSelection() {
+    requestAnimationFrame(() => {
+        const selText = (window.getSelection()?.toString() || "").trim();
+        hint.setAttribute("data-name", selText.substring(0, 100));
+        if (selText) {
+            showInstantAnchor();
+        } else {
+            hint.style.display = "none";
+        }
+    });
+}
+
+document.addEventListener("mouseup", handleEndOfSelection);
+document.addEventListener("touchend", handleEndOfSelection, {
+    passive: true,
+});
+window.addEventListener(
+    "scroll",
+    () => {
+        if (window.getSelection()?.toString()) showInstantAnchor();
+        else hint.style.display = "none";
+    },
+    { passive: true }
+);
+window.addEventListener("resize", () => {
+    if (window.getSelection()?.toString()) showInstantAnchor();
+    else hint.style.display = "none";
+});
+
+document.addEventListener("click", (e) => {
+    if (e.target === hint || hint.contains(e.target)) return;
+
+    const sel = window.getSelection();
+    if (!sel || sel.isCollapsed) hint.style.display = "none";
+});
+
+hint.addEventListener("click", (ev) => {
+    bookmark.id = crypto.randomUUID();
+    bookmark.category = "QuickMark";
+    bookmark.name = hint.getAttribute("data-name");
+    let url = window.location.href;
+    let u = new URL(url);
+    bookmark.url = url;
+    bookmark.origin = u.origin;
+    const now = new Date();
+    bookmark.createTime = now.getTime();
+
+    const container = chooseContainer(quickMarkContainer);
+    const xpath = getXPathByContent(container);
+    bookmark.xpath = xpath;
+
+    chrome.runtime.sendMessage({
+        type: "element_captured",
+        bookmark: bookmark,
+    });
+
+    showToast("add successfully", 1500);
+
+    const text = (window.getSelection()?.toString() || "").trim();
+    if (text) hint.style.display = "none";
+    ev.stopPropagation();
+});
+
+//--------add instant Anchor -------//
 
 // <!-- Copyright (c) 2025 Long Cheng -->

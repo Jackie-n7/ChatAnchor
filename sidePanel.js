@@ -93,7 +93,7 @@ function renderGroupedBookmarks(grouped = null) {
             sortedCatBookmarks.forEach((bookmark) => {
                 const item = document.createElement("div");
                 item.className = "item-container";
-                item.setAttribute("data-xpath", bookmark.xpath);
+
                 // ---- item-title ----
                 const itemTitle = document.createElement("div");
                 itemTitle.className = "item-title";
@@ -101,9 +101,18 @@ function renderGroupedBookmarks(grouped = null) {
 
                 const nameP = document.createElement("p");
                 nameP.textContent = bookmark.name;
+                nameP.title = bookmark.name;
 
                 const timeSpan = document.createElement("span");
-                timeSpan.textContent = bookmark.createTime;
+                const createTimeObj = new Date(bookmark.createTime);
+                const formattedTime = createTimeObj.toLocaleString("en-US", {
+                    month: "short",
+                    day: "2-digit",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: true,
+                });
+                timeSpan.textContent = formattedTime;
 
                 itemTitle.appendChild(nameP);
                 itemTitle.appendChild(timeSpan);

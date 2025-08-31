@@ -178,7 +178,7 @@ summary {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0.115rem 0.5rem;
+    padding: 0.125rem 0.5rem;
     background-color: #e3f0fb;
     border-radius: 0.25rem;
     transition: 0.4s;
@@ -190,25 +190,35 @@ summary {
 }
 
 .item-container div:first-of-type {
-    width: 85%;
+    width: 90%;
 }
 
 .item-title {
     display: flex;
-    gap: 0.5rem;
-    align-items: center;
+    flex-direction: column;
+    align-items: start;
     cursor: pointer;
 }
 
 .item-title p {
+    margin-top: 0.1rem;
+    margin-bottom: 0rem;
     font-size: 0.875rem;
     font-weight: 500;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
 }
 
 .item-title span {
     font-style: italic;
-    font-size: 0.75rem;
+    font-size: 0.65rem;
     color: rgb(160, 160, 160);
+    display: block;
+    white-space: nowrap;
 }
 
 .item--delete img {
