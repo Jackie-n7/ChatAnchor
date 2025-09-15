@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "ChatAnchor",
-    "version": "1.1",
+    "version": "1.2",
     "description": "This is a bookmark marker for AI conversation tools.",
     "background": {
         "service_worker": "serviceWorker.js"
@@ -21,7 +21,18 @@
     "permissions": ["sidePanel", "tabs", "activeTab", "storage"],
     "content_scripts": [
         {
-            "matches": ["<all_urls>"],
+            "matches": [
+                "https://chat.deepseek.com/*",
+                "https://chatgpt.com/*",
+                "https://gemini.google.com/*",
+                "https://claude.ai/*",
+                "https://grok.com/*",
+                "https://www.doubao.com/*",
+                "https://chat.qwen.ai/*",
+                "https://www.kimi.com/*",
+                "https://yuanbao.tencent.com/*",
+                "https://copilot.microsoft.com/*"
+            ],
             "js": ["content.js"]
         }
     ],

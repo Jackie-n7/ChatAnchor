@@ -11,7 +11,14 @@ async function init() {
         const grouped = groupBookmarks(allBookmarks);
         renderGroupedBookmarks(grouped);
     });
+    sendToPage({ type: "sidePanel_open" });
 }
+
+window.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") {
+        sendToPage({ type: "sidePanel_closed" });
+    }
+});
 
 async function getCurrentTabUrl() {
     const [tab] = await chrome.tabs.query({
@@ -28,7 +35,11 @@ async function sendToPage(msg) {
         currentWindow: true,
     });
     if (tab?.id) {
-        chrome.tabs.sendMessage(tab.id, msg);
+        chrome.tabs.sendMessage(tab.id, msg, (response) => {
+            if (chrome.runtime.lastError) {
+                return;
+            }
+        });
     }
 }
 

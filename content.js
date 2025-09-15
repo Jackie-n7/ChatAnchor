@@ -11,6 +11,7 @@ function scrollToXPath(xpath) {
 
     if (el) {
         el.scrollIntoView({ behavior: "smooth", block: "center" });
+
         el.style.outline = "2px solid red";
         setTimeout(() => (el.style.outline = ""), 3000);
     } else {
@@ -156,6 +157,18 @@ chrome.runtime.onMessage.addListener((msg) => {
 
         document.addEventListener("click", handleClick);
     }
+
+    if (msg.type === "sidePanel_closed") {
+        hint.style.display = "none";
+        document.removeEventListener("mouseup", handleEndOfSelection);
+        document.removeEventListener("touchend", handleEndOfSelection);
+    }
+    if (msg.type === "sidePanel_open") {
+        document.addEventListener("mouseup", handleEndOfSelection);
+        document.addEventListener("touchend", handleEndOfSelection, {
+            passive: true,
+        });
+    }
 });
 
 //------- v1.1 add instant Anchor --------//
@@ -175,7 +188,9 @@ hint.style.cssText = `position: absolute;
         pointer-events: auto; 
         white-space: nowrap;
         z-index: 9999;
+        cursor:pointer;
         transform: translateY(-8px);`;
+
 document.body.appendChild(hint);
 
 function getSelectionRect() {
@@ -230,10 +245,6 @@ function handleEndOfSelection() {
     });
 }
 
-document.addEventListener("mouseup", handleEndOfSelection);
-document.addEventListener("touchend", handleEndOfSelection, {
-    passive: true,
-});
 window.addEventListener(
     "scroll",
     () => {
@@ -242,10 +253,6 @@ window.addEventListener(
     },
     { passive: true }
 );
-window.addEventListener("resize", () => {
-    if (window.getSelection()?.toString()) showInstantAnchor();
-    else hint.style.display = "none";
-});
 
 document.addEventListener("click", (e) => {
     if (e.target === hint || hint.contains(e.target)) return;
@@ -274,7 +281,7 @@ hint.addEventListener("click", (ev) => {
         bookmark: bookmark,
     });
 
-    showToast("add successfully", 1500);
+    showToast("Added successfully", 1500);
 
     const text = (window.getSelection()?.toString() || "").trim();
     if (text) hint.style.display = "none";

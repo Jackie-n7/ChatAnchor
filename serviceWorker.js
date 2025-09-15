@@ -8,6 +8,7 @@ const ORIGINS = [
     "https://chat.qwen.ai",
     "https://www.kimi.com",
     "https://yuanbao.tencent.com",
+    "https://copilot.microsoft.com",
 ];
 let pendingScroll = null;
 
@@ -28,7 +29,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, info, tab) => {
     } else {
         await chrome.sidePanel.setOptions({
             tabId,
-            enabled: true,
+            enabled: false,
         });
     }
 
