@@ -158,6 +158,7 @@ chrome.runtime.onMessage.addListener((msg) => {
         document.addEventListener("click", handleClick);
     }
 
+    //------- v1.2 control quickMark using sidePanel status --------//
     if (msg.type === "sidePanel_closed") {
         hint.style.display = "none";
         document.removeEventListener("mouseup", handleEndOfSelection);
