@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "ChatAnchor",
-    "version": "1.2",
+    "version": "1.3",
     "description": "This is a bookmark marker for AI conversation tools.",
     "background": {
         "service_worker": "serviceWorker.js"

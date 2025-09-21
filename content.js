@@ -1,4 +1,5 @@
 const bookmark = {};
+let flag = false;
 
 function scrollToXPath(xpath) {
     const el = document.evaluate(
@@ -133,6 +134,13 @@ chrome.runtime.onMessage.addListener((msg) => {
     if (msg.type === "scroll_to") {
         if (window.location.href === msg.url) {
             scrollToXPath(msg.xpath);
+            //-----v1.3 fix the issue of quickMark doesn't work when open new url---//
+            if (!flag) {
+                document.addEventListener("mouseup", handleEndOfSelection);
+                document.addEventListener("touchend", handleEndOfSelection, {
+                    passive: true,
+                });
+            }
         } else {
             showToast("Redirecting to another page...");
             chrome.runtime.sendMessage({
@@ -169,6 +177,7 @@ chrome.runtime.onMessage.addListener((msg) => {
         document.addEventListener("touchend", handleEndOfSelection, {
             passive: true,
         });
+        flag = true;
     }
 });
 
@@ -235,6 +244,7 @@ function showInstantAnchor() {
 }
 
 function handleEndOfSelection() {
+    console.log("selected");
     requestAnimationFrame(() => {
         const selText = (window.getSelection()?.toString() || "").trim();
         hint.setAttribute("data-name", selText.substring(0, 100));

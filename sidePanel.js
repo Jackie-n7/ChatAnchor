@@ -11,12 +11,13 @@ async function init() {
         const grouped = groupBookmarks(allBookmarks);
         renderGroupedBookmarks(grouped);
     });
-    sendToPage({ type: "sidePanel_open" });
 }
 
 window.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "hidden") {
         sendToPage({ type: "sidePanel_closed" });
+    } else if (document.visibilityState === "visible") {
+        sendToPage({ type: "sidePanel_open" });
     }
 });
 
