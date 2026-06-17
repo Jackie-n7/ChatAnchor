@@ -1,23 +1,96 @@
 const bookmark = {};
 let flag = false;
 
-function scrollToXPath(xpath) {
-    const el = document.evaluate(
-        xpath,
-        document,
-        null,
-        XPathResult.FIRST_ORDERED_NODE_TYPE,
-        null
-    ).singleNodeValue;
+function findScrollContainer(el) {
+    let node = el?.parentElement;
+    while (node && node !== document.documentElement) {
+        const { overflowY } = getComputedStyle(node);
+        if ((overflowY === "auto" || overflowY === "scroll") && node.scrollHeight > node.clientHeight) {
+            return node;
+        }
+        node = node.parentElement;
+    }
+    return document.scrollingElement || document.documentElement;
+}
 
+function highlightElement(el) {
+    el.style.outline = "2px solid red";
+    setTimeout(() => (el.style.outline = ""), 3000);
+}
+
+function tryXPath(xpath) {
+    return document.evaluate(xpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+}
+
+// Returns the scroll container marked at capture time, or falls back to the largest scrollable div.
+function getScrollContainerForRestore() {
+    return (
+        document.querySelector("[data-anchor]") ||
+        (() => {
+            let best = document.scrollingElement || document.documentElement;
+            let bestHeight = 0;
+            document.querySelectorAll("div, main").forEach((node) => {
+                const s = getComputedStyle(node);
+                if ((s.overflowY === "auto" || s.overflowY === "scroll") && node.scrollHeight > bestHeight) {
+                    bestHeight = node.scrollHeight;
+                    best = node;
+                }
+            });
+            return best;
+        })()
+    );
+}
+
+function scrollToXPath(xpath, scrollTop) {
+    const el = tryXPath(xpath);
     if (el) {
         el.scrollIntoView({ behavior: "smooth", block: "center" });
-
-        el.style.outline = "2px solid red";
-        setTimeout(() => (el.style.outline = ""), 3000);
-    } else {
+        highlightElement(el);
         return;
     }
+
+    if (scrollTop === undefined) {
+        console.warn("[ChatAnchor] Element not found for xpath:", xpath);
+        showToast("Location not found on this page.", 2000);
+        return;
+    }
+
+    // Element not in DOM (virtualized out, or SPA still rendering).
+    // Retry up to 5 times: re-find container, re-set scrollTop, watch via MutationObserver.
+    // Retrying handles React resetting scrollTop to 0 after its initial render.
+    let attempts = 0;
+    let activeObserver = null;
+
+    function tryScroll() {
+        if (attempts >= 5) {
+            console.warn("[ChatAnchor] Element not found after retries:", xpath);
+            showToast("Location not found on this page.", 2000);
+            return;
+        }
+        attempts++;
+
+        const sc = getScrollContainerForRestore();
+        sc.scrollTop = scrollTop;
+
+        if (activeObserver) activeObserver.disconnect();
+        let found = false;
+        activeObserver = new MutationObserver(() => {
+            const el2 = tryXPath(xpath);
+            if (el2) {
+                found = true;
+                activeObserver.disconnect();
+                el2.scrollIntoView({ behavior: "smooth", block: "center" });
+                highlightElement(el2);
+            }
+        });
+        activeObserver.observe(document.body, { childList: true, subtree: true });
+
+        setTimeout(() => {
+            if (!found) tryScroll();
+        }, 800);
+    }
+
+    tryScroll();
 }
 
 function getXPathByContent(el) {
@@ -60,8 +133,11 @@ function handleClick(ev) {
     if (!(target instanceof Element)) return;
     const container = chooseContainer(target);
     const xpath = getXPathByContent(container);
+    const sc = findScrollContainer(container);
+    sc.dataset.anchor = "1";
 
     bookmark.xpath = xpath;
+    bookmark.scrollTop = sc.scrollTop;
 
     chrome.runtime.sendMessage({
         type: "element_captured",
@@ -69,7 +145,7 @@ function handleClick(ev) {
     });
 
     showToast("location selected.", 1000);
-    document.removeEventListener("click", handleClick);
+    document.removeEventListener("click", handleClick, { capture: true });
 }
 
 function showToast(message, duration = 2000) {
@@ -111,29 +187,24 @@ function showToast(message, duration = 2000) {
 }
 
 function escapeXPathText(text) {
-    if (!text.includes('"')) {
-        return `"${text}"`;
-    } else if (!text.includes("'")) {
-        return `'${text}'`;
-    } else {
-        return (
-            "concat(" +
-            text
-                .replace(/'/g, `', "'", '`)
-                .replace(/"/g, `', '"', '`)
-                .split(",")
-                .map((s) => s.trim())
-                .map((s) => `'${s}'`)
-                .join(", ") +
-            ")"
-        );
-    }
+    if (!text.includes('"')) return `"${text}"`;
+    if (!text.includes("'")) return `'${text}'`;
+    // Split on " and reassemble with concat(), using double-quoted parts
+    // so single quotes inside are safe, plus literal '"' for each split point.
+    const parts = text.split('"');
+    const concatParts = [];
+    parts.forEach((part, i) => {
+        if (part) concatParts.push(`"${part}"`);
+        if (i < parts.length - 1) concatParts.push(`'"'`);
+    });
+    return `concat(${concatParts.join(", ")})`;
 }
 
 chrome.runtime.onMessage.addListener((msg) => {
     if (msg.type === "scroll_to") {
+        console.log("[ChatAnchor] scroll_to received. current:", window.location.href, "| saved:", msg.url, "| xpath:", msg.xpath);
         if (window.location.href === msg.url) {
-            scrollToXPath(msg.xpath);
+            scrollToXPath(msg.xpath, msg.scrollTop);
             //-----v1.3 fix the issue of quickMark doesn't work when open new url---//
             if (!flag) {
                 document.addEventListener("mouseup", handleEndOfSelection);
@@ -147,6 +218,7 @@ chrome.runtime.onMessage.addListener((msg) => {
                 type: "change_url",
                 xpath: msg.xpath,
                 url: msg.url,
+                scrollTop: msg.scrollTop,
             });
             window.location.href = msg.url;
         }
@@ -163,7 +235,7 @@ chrome.runtime.onMessage.addListener((msg) => {
         const now = new Date();
         bookmark.createTime = now.getTime();
 
-        document.addEventListener("click", handleClick);
+        document.addEventListener("click", handleClick, { capture: true });
     }
 
     //------- v1.2 control quickMark using sidePanel status --------//
@@ -285,7 +357,10 @@ hint.addEventListener("click", (ev) => {
 
     const container = chooseContainer(quickMarkContainer);
     const xpath = getXPathByContent(container);
+    const sc = findScrollContainer(container);
+    sc.dataset.anchor = "1";
     bookmark.xpath = xpath;
+    bookmark.scrollTop = sc.scrollTop;
 
     chrome.runtime.sendMessage({
         type: "element_captured",

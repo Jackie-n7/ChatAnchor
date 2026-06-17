@@ -1,8 +1,8 @@
 {
     "manifest_version": 3,
-    "name": "ChatAnchor",
+    "name": "ChatAnchor: ChatGPT & AI Tools Bookmark and Marker",
     "version": "1.3",
-    "description": "This is a bookmark marker for AI conversation tools.",
+    "description": "This is a bookmark and marker for AI conversation tools like ChatGPT, Gemini, Claude, etc.",
     "background": {
         "service_worker": "serviceWorker.js"
     },

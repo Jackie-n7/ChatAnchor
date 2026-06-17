@@ -17,33 +17,42 @@ chrome.sidePanel
     .catch((error) => console.error(error));
 
 chrome.tabs.onUpdated.addListener(async (tabId, info, tab) => {
-    if (info.status !== "complete" || !tab.url) return;
+    if (!tab.url) return;
     const url = new URL(tab.url);
 
-    if (ORIGINS.includes(url.origin)) {
-        await chrome.sidePanel.setOptions({
-            tabId,
-            path: "sidePanel.html",
-            enabled: true,
-        });
-    } else {
-        await chrome.sidePanel.setOptions({
-            tabId,
-            enabled: false,
-        });
+    // Enable/disable side panel only on full page load
+    if (info.status === "complete") {
+        if (ORIGINS.includes(url.origin)) {
+            await chrome.sidePanel.setOptions({
+                tabId,
+                path: "sidePanel.html",
+                enabled: true,
+            });
+        } else {
+            await chrome.sidePanel.setOptions({
+                tabId,
+                enabled: false,
+            });
+        }
     }
 
+    // Trigger pending scroll when the target URL is reached.
+    // Handles both full page reload (info.status === "complete") and
+    // SPA pushState navigation (info.url set, no status change).
     if (
-        info.status === "complete" &&
         pendingScroll &&
-        tabId === pendingScroll.tabId
+        tabId === pendingScroll.tabId &&
+        tab.url === pendingScroll.url
     ) {
+        const scroll = pendingScroll;
+        pendingScroll = null;
         setTimeout(
             () =>
                 chrome.tabs.sendMessage(tabId, {
                     type: "scroll_to",
                     url: tab.url,
-                    xpath: pendingScroll.xpath,
+                    xpath: scroll.xpath,
+                    scrollTop: scroll.scrollTop,
                 }),
             2500
         );
@@ -56,6 +65,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendRes) => {
             tabId: sender.tab.id,
             xpath: msg.xpath,
             url: msg.url,
+            scrollTop: msg.scrollTop,
         };
     }
 });

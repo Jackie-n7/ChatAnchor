@@ -135,6 +135,7 @@ function renderGroupedBookmarks(grouped = null) {
                         type: "scroll_to",
                         xpath: bookmark.xpath,
                         url: bookmark.url,
+                        scrollTop: bookmark.scrollTop,
                     });
                 });
 
